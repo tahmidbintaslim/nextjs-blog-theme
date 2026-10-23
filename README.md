@@ -2,7 +2,7 @@
 
 A personal copy of the [Netlify Next.js blog template](https://github.com/netlify-templates/nextjs-blog-theme), designed by [Bejamas](https://bejamas.io). It is a small blog: posts are MDX files in `posts/`, pages are built with Next.js and styled with Tailwind CSS, and there is a light and dark mode.
 
-![Preview of the blog theme: author Jay Doe, blog name "Next.js Blog Theme", one post](nextjs-blog-theme-preview.png)
+![Preview of the blog theme: name Jay Doe, title "Next.js Blog Theme", one post](nextjs-blog-theme-preview.png)
 
 Upstream demo: <https://bejamas-nextjs-blog.netlify.app>
 
@@ -11,7 +11,7 @@ Upstream demo: <https://bejamas-nextjs-blog.netlify.app>
 - Next.js 16 (Pages Router), React 19, Tailwind CSS 4 with `@tailwindcss/typography`.
 - MDX posts rendered with `next-mdx-remote`, with GitHub-flavored Markdown (`remark-gfm`) and Prism code highlighting.
 - A home page that lists posts newest first (`pages/index.js`) and a post page with previous and next links (`pages/posts/[slug].js`).
-- Light and dark mode. It follows the OS setting, and the footer has a toggle that is saved in `localStorage`.
+- Light and dark mode, set with the toggle in the footer and saved in `localStorage`. A first visit starts in light mode whatever the OS setting. The page follows the OS only when that setting changes while the page is open (`components/Layout.js`), and it saves that change too.
 - Five color themes and three font stacks (`themes.js`), picked with environment variables.
 - Five example posts in `posts/`.
 - `netlify.toml` for a Netlify build (`npm run build`, publish `.next`).
@@ -25,6 +25,7 @@ Known problems on `main`:
 - Pages that read posts fail. The `js-yaml` override in `package.json` puts js-yaml 4 under `gray-matter`, which calls `yaml.safeLoad`, a function js-yaml 4 removed. `npm run dev` returns a 500 on the home page and post pages, and `npm run build` stops while prerendering the first post.
 - `npm ci` fails because `package-lock.json` is out of sync with `package.json`. `npm install` works.
 - `npm run lint` and `npm run export` call `next lint` and `next export`, which Next.js 16 no longer has.
+- `npm run dev:watch` serves the site but does not reload it. When a file in `posts/` changes, `next-remote-watch` 2.0.0 throws `TypeError: Cannot read properties of undefined (reading 'send')`, because it calls `app.server.hotReloader`, which Next.js 16 does not expose. Use `npm run dev` and refresh the page.
 
 ## Running it locally
 
@@ -35,7 +36,7 @@ npm install
 npm run dev
 ```
 
-Then open <http://localhost:3000>. `npm run dev:watch` also reloads the page when a file in `posts/` changes. `npm run build` and `npm start` build and serve the production site.
+Then open <http://localhost:3000>. After editing a post, refresh the page. `npm run build` and `npm start` build and serve the production site. Until the `js-yaml` problem under Status is fixed, the home page and post pages return a 500 and `npm run build` fails.
 
 ## Configuring the blog
 
