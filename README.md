@@ -1,112 +1,78 @@
-![Netlify Next.js Blog Template designed by Bejamas](https://user-images.githubusercontent.com/43764894/223762618-62742b4e-9424-44a7-8e85-9f7e4e19db54.png)
+# nextjs-blog-theme
 
+A personal copy of the [Netlify Next.js blog template](https://github.com/netlify-templates/nextjs-blog-theme), designed by [Bejamas](https://bejamas.io). It is a small blog: posts are MDX files in `posts/`, pages are built with Next.js and styled with Tailwind CSS, and there is a light and dark mode.
 
-[![Deploy to Netlify Button](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/netlify-templates/nextjs-blog-theme)
+![Preview of the blog theme: name Jay Doe, title "Next.js Blog Theme", one post](nextjs-blog-theme-preview.png)
 
+Upstream demo: <https://bejamas-nextjs-blog.netlify.app>
 
-A customizable blog starter using:
+## What it contains
 
-- [Next.js](https://github.com/vercel/next.js) v15 (Pages Router)
-- [Tailwind](https://tailwindcss.com/) v4.x
-- Built-in [MDX](https://mdxjs.com/) support
-- Includes modern design with dark & light themes
+- Next.js 16 (Pages Router), React 19, Tailwind CSS 4 with `@tailwindcss/typography`.
+- MDX posts rendered with `next-mdx-remote`, with GitHub-flavored Markdown (`remark-gfm`) and Prism code highlighting.
+- A home page that lists posts newest first (`pages/index.js`) and a post page with previous and next links (`pages/posts/[slug].js`).
+- Light and dark mode, set with the toggle in the footer and saved in `localStorage`. A first visit starts in light mode whatever the OS setting. The page follows the OS only when that setting changes while the page is open (`components/Layout.js`), and it saves that change too.
+- Five color themes and three font stacks (`themes.js`), picked with environment variables.
+- Five example posts in `posts/`.
+- `netlify.toml` for a Netlify build (`npm run build`, publish `.next`).
 
-![Preview of blog theme. Author named Jay Doe and blog's name is "Next.js Blog Theme" with one blog post](nextjs-blog-theme-preview.png)
+## Status
 
-[Take a gander at the demo.](https://bejamas-nextjs-blog.netlify.app)
+This repo is the upstream template as of January 2026 plus dependency security overrides in `package.json`. It has no tests.
 
-[Click here to watch the template walkthrough!](https://www.youtube.com/watch?v=63QZHs259dY)
+Known problems on `main`:
 
-## Table of Contents:
+- Pages that read posts fail. The `js-yaml` override in `package.json` puts js-yaml 4 under `gray-matter`, which calls `yaml.safeLoad`, a function js-yaml 4 removed. `npm run dev` returns a 500 on the home page and post pages, and `npm run build` stops while prerendering the first post.
+- `npm ci` fails because `package-lock.json` is out of sync with `package.json`. `npm install` works.
+- `npm run lint` and `npm run export` call `next lint` and `next export`, which Next.js 16 no longer has.
+- `npm run dev:watch` serves the site but does not reload it. When a file in `posts/` changes, `next-remote-watch` 2.0.0 throws `TypeError: Cannot read properties of undefined (reading 'send')`, because it calls `app.server.hotReloader`, which Next.js 16 does not expose. Use `npm run dev` and refresh the page.
 
-- [Getting Started](#getting-started)
-  - [Setting Up Locally](#setting-up-locally)
-  - [Using the Wizard](#using-the-setup-wizard)
-- [Configuring the Blog](#configuring-the-blog)
-- [Adding New Posts](#adding-new-posts)
-- [Testing](#testing)
-  - [Included Default Testing](#included-default-testing)
-  - [Removing Renovate](#removing-renovate)
+## Running it locally
 
-## Getting Started
-
----
-
-You can get started with this project in two ways: locally or using the [setup wizard](https://nextjs-wizard.netlify.app/).
-
-### Setting Up Locally
-
-If you're doing it locally, start with clicking the [use this template](https://github.com/netlify-templates/nextjs-blog-theme/generate) button on GitHub. This will create a new repository with this template's files on your GitHub account. Once that is done, clone your new repository and navigate to it in your terminal.
-
-From there, you can install the project's dependencies by running:
+The lockfile is for npm.
 
 ```shell
-yarn install
+npm install
+npm run dev
 ```
 
-Finally, you can run your project locally with:
-
-```shell
-yarn run dev
-```
-
-Open your browser and visit <http://localhost:3000>, your project should be running!
-
-### Using the Setup Wizard
-
-![Preview of Setup Wizard showing the initial page of a setup form](nextjs-setup-wizard.png)
-
-Through the [setup wizard](https://nextjs-wizard.netlify.app/), you can create your blog in a few clicks and deploy to Netlify.
+Then open <http://localhost:3000>. After editing a post, refresh the page. `npm run build` and `npm start` build and serve the production site. Until the `js-yaml` problem under Status is fixed, the home page and post pages return a 500 and `npm run build` fails.
 
 ## Configuring the blog
 
-The config is based on environment variables to make it easy to integrate with any Jamstack platform, like Netlify.
+Settings come from environment variables, read when the pages are built:
 
-Here are the variables you can edit:
-| Variable | Description | Options
+| Variable | What it sets | Default |
 | --- | --- | --- |
-| `BLOG_NAME` | the name of your blog, displayed below the avatar ||
-| `BLOG_TITLE` | the main header (`h1`) on the home page ||
-| `BLOG_FOOTER_TEXT`| the text in the footer ||
-| `BLOG_THEME` | the theme to pass to Tailwind | default |
-| `BLOG_FONT_HEADINGS` | the font-family for all HTML headings, from `h1` to `h6`| sans-serif (default), serif, monospace|
-| `BLOG_FONT_PARAGRAPHS` | the font-family for all other HTML elements | sans-serif (default), serif, monospace|
+| `BLOG_NAME` | Name in the header and in page titles | `Jay Doe` |
+| `BLOG_TITLE` | Main heading (`h1`) on the home page | `Next.js Blog Theme` |
+| `BLOG_FOOTER_TEXT` | Footer text | `All rights reserved.` |
+| `BLOG_THEME` | Color theme: `default`, `bejamas`, `netlify`, `reddie`, `greenie` | `default` |
+| `BLOG_FONT_HEADINGS` | Font for headings: `sans-serif`, `serif`, `monospace` | `sans-serif` |
+| `BLOG_FONT_BODY` | Font for everything else, same options | `sans-serif` |
 
-All of the env variables can be configured through the [Wizard](https://nextjs-wizard.netlify.app/) or through setting the project's environment variables. You can do this in your Netlify dashaboard (Site settings/Build & deploy/Environment/Environment variables).
+The upstream README calls the last one `BLOG_FONT_PARAGRAPHS`; the code reads `BLOG_FONT_BODY`.
 
-https://user-images.githubusercontent.com/3611928/153997545-6dcdeef0-e570-49e7-93d6-ce0d393d16c9.mp4
+To change the defaults in code instead, edit `utils/global-data.js` (name, title, footer) and `utils/theme-utils.js` (theme and fonts). The color and font values live in `themes.js`.
 
-[alt: video walkthrough of editing env vars]
+## Adding posts
 
-If setting an environment variable isn't your cup of tea, the defaults can be changed in [`utils/global-data.js`](/utils/global-data.js). You can also remove the variables and hard code blog information where these variables are used in the code base.
+Add a `.mdx` file to `posts/`. The file name becomes the URL (`posts/my-post.mdx` is served at `/posts/my-post`). Front matter fields:
 
-- `BLOG_THEME, BLOG_FONT_HEADINGS, & BLOG_FONT_PARAGRAPHS` are used in [`tailwind-preset.js`](tailwind-preset.js)
-- `BLOG_NAME, BLOG_TITLE, BLOG_FOOTER_TEXT` are used in [`pages/index.js`](pages/index.js) & [`pages/posts/[slug].js`](pages/posts/[slug].js) through the `globalData` object.
+```yaml
+---
+title: My post
+description: One line shown on the home page and under the post title.
+date: '2026-01-31'
+---
+```
 
-## Adding new posts
+MDX files cannot use `import`. To use a React component in a post, add it to the `components` object in `pages/posts/[slug].js`. Links and images are already mapped to `components/CustomLink.js` and `components/CustomImage.js`.
 
-All posts are stored in `/posts` directory. To make a new post, create a new file with the [`.mdx` extension](https://mdxjs.com/).
+## Dependency updates
 
-Since the posts are written in `MDX` format you can pass props and components. That means you can use [React components](https://reactjs.org/docs/components-and-props.html) inside your posts to make them more interactive. Learn more about how to do so in the [MDX docs on content](https://mdxjs.com/docs/using-mdx/#components).
+`renovate.json` comes from the upstream template and extends the `netlify-templates/renovate-config` preset.
 
-https://user-images.githubusercontent.com/3611928/152727802-102ec296-41c8-446d-93ed-922d11187073.mp4
+## License
 
-[alt: video walkthrough of adding a new blog post]
-
-## Testing
-
-### Included Default Testing
-
-We’ve included some tooling that helps us maintain these templates. This template currently uses:
-
-- [Renovate](https://www.mend.io/free-developer-tools/renovate/) - to regularly update our dependencies
-
-If your team is not interested in this tooling, you can remove them with ease!
-
-### Removing Renovate
-
-In order to keep our project up-to-date with dependencies we use a tool called [Renovate](https://github.com/marketplace/renovate). If you’re not interested in this tooling, delete the `renovate.json` file and commit that onto your main branch.
-
-## Support
-
-If you get stuck along the way, get help in our [support forums](https://answers.netlify.com/).
+MIT, see [LICENSE](LICENSE). The template is by Bejamas and Netlify (see `package.json` for contributors).
