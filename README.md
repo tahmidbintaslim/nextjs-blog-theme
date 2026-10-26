@@ -20,27 +20,30 @@ Upstream demo: <https://bejamas-nextjs-blog.netlify.app>
 
 This repo is the upstream template as of January 2026 plus dependency security overrides in `package.json`. It has no tests.
 
-Known problems on `main`:
+Fixed in this revision:
 
-- Pages that read posts fail. The `js-yaml` override in `package.json` puts js-yaml 4 under `gray-matter`, which calls `yaml.safeLoad`, a function js-yaml 4 removed. `npm run dev` returns a 500 on the home page and post pages, and `npm run build` stops while prerendering the first post.
-- `npm ci` fails because `package-lock.json` is out of sync with `package.json`. `npm install` works.
-- `npm run lint` and `npm run export` call `next lint` and `next export`, which Next.js 16 no longer has.
-- `npm run dev:watch` serves the site but does not reload it. When a file in `posts/` changes, `next-remote-watch` 2.0.0 throws `TypeError: Cannot read properties of undefined (reading 'send')`, because it calls `app.server.hotReloader`, which Next.js 16 does not expose. Use `npm run dev` and refresh the page.
+- The `js-yaml` security override put js-yaml 4 under `gray-matter`, which calls `yaml.safeLoad` (removed in js-yaml 4), so every page that reads posts returned a 500 and `npm run build` failed. `gray-matter` now gets the patched 3.x line (`^3.14.2`); everything else keeps `>=4.2.0`.
+- `package-lock.json` is back in sync, so `npm ci` works.
+- The `lint` and `export` scripts called `next lint` and `next export`, which Next.js 16 removed. Both scripts were dropped; `next build` already writes the static pages.
+
+Still open: `npm run dev:watch` serves the site but does not reload it. When a file in `posts/` changes, `next-remote-watch` 2.0.0 throws `TypeError: Cannot read properties of undefined (reading 'send')`, because it calls `app.server.hotReloader`, which Next.js 16 does not expose. Use `npm run dev` and refresh the page.
+
+CI (`.github/workflows/ci.yml`) runs `npm ci` and `npm run build` on every push to `main` and every pull request.
 
 ## Running it locally
 
 The lockfile is for npm.
 
 ```shell
-npm install
+npm ci
 npm run dev
 ```
 
-Then open <http://localhost:3000>. After editing a post, refresh the page. `npm run build` and `npm start` build and serve the production site. Until the `js-yaml` problem under Status is fixed, the home page and post pages return a 500 and `npm run build` fails.
+Then open <http://localhost:3000>. After editing a post, refresh the page. `npm run build` and `npm start` build and serve the production site.
 
 ## Configuring the blog
 
-Settings come from environment variables, read when the pages are built:
+Settings come from environment variables, read when the pages are built. `.env.example` lists them; copy it to `.env.local` to override the defaults:
 
 | Variable | What it sets | Default |
 | --- | --- | --- |
@@ -71,7 +74,7 @@ MDX files cannot use `import`. To use a React component in a post, add it to the
 
 ## Dependency updates
 
-`renovate.json` comes from the upstream template and extends the `netlify-templates/renovate-config` preset.
+Dependabot (`.github/dependabot.yml`) opens weekly npm updates and monthly GitHub Actions updates. The upstream `renovate.json`, which pointed at the `netlify-templates` preset, was removed.
 
 ## License
 
