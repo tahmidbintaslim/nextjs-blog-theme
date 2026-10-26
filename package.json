@@ -17,9 +17,7 @@
     "dev": "next",
     "dev:watch": "next-remote-watch ./posts",
     "build": "next build",
-    "start": "next start",
-    "export": "next build && next export",
-    "lint": "next lint"
+    "start": "next start"
   },
   "dependencies": {
     "@mapbox/rehype-prism": "^0.9.0",
@@ -48,6 +46,9 @@
   "license": "MIT",
   "overrides": {
     "js-yaml": ">=4.2.0 <5",
+    "gray-matter": {
+      "js-yaml": "^3.14.2"
+    },
     "@babel/core": ">=7.29.6 <8",
     "qs": ">=6.15.2 <7",
     "picomatch": ">=4.0.4 <5",
